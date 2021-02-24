@@ -1,0 +1,10 @@
+<%
+const COVERS = [
+  'cover.jpg',
+  'cover2.jpg',
+  'cover3.jpg',
+  'cover4.jpg',
+]
+const rand = () => Math.floor(Math.random() * COVERS.length)
+__append(COVERS[rand()])
+%>

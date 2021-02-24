@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <%- include('head.ejs') %>
+  <link href="./css/chart.min.css" rel="stylesheet">
+  <script type="text/javascript" src="./js/jquery.mask.min.js"></script>
+  <script type="text/javascript" src="./js/chart.min.js"></script>
+</head>
+
+<body>
+
+  <%- include('header.ejs', { page }) %>
+
+  <main class="mb-4" style="min-height: 100vh;">
+    <div
+      style="height: 300px; backdrop-filter: brightness(50%); background-image: url(../img/<%= include('cover.ejs') %>); background-size: cover">
+      <div class="w-100 h-100 d-flex justify-content-center align-items-center text-center"
+        style="backdrop-filter: brightness(50%)">
+        <h1 class="text-white">Perfil</h1>
+      </div>
+    </div>
+    <div class="container mt-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-md-3 border-right">
+              <h2>Conta</h2>
+              <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a class="nav-link active" id="v-pills-stats-tab" data-toggle="pill" href="#v-pills-stats" role="tab"
+                  aria-controls="v-pills-stats" aria-selected="true">
+                  Estatísticas
+                </a>
+                <a class="nav-link" id="v-pills-editar-tab" data-toggle="pill" href="#v-pills-editar" role="tab"
+                  aria-controls="v-pills-editar" aria-selected="false">
+                  Editar
+                </a>
+                <a class="nav-link" id="v-pills-pagamento-tab" data-toggle="pill" href="#v-pills-pagamento" role="tab"
+                  aria-controls="v-pills-pagamento" aria-selected="false">
+                  Meios de Pagamento
+                </a>
+                <a class="nav-link" id="v-pills-historico-tab" data-toggle="pill" href="#v-pills-historico" role="tab"
+                  aria-controls="v-pills-historico" aria-selected="false">
+                  Histórico
+                </a>
+                <a class="nav-link" id="v-pills-moveis-tab" data-toggle="pill" href="#v-pills-moveis" role="tab"
+                  aria-controls="v-pills-moveis" aria-selected="false">
+                  Meus Móveis
+                </a>
+                <% if (session?.usuario && session?.usuario.acesso > 1) { %>
+                <a class="nav-link" id="v-pills-cadastrar" href="/cadastrarmovel" aria-controls="v-pills-cadastrar"
+                  aria-selected="false"><i class="fas fa-arrow-left"></i>
+                  Cadastrar Móvel
+                </a>
+                <% } %>
+              </div>
+            </div>
+            <div class="col-12 col-md-9">
+              <div class="tab-content" id="v-pills-tabContent">
+                <div class="tab-pane fade show p-2 active" id="v-pills-stats" role="tabpanel"
+                  aria-labelledby="v-pills-stats-tab">
+                  <h4 class="mb-3">Estatísticas</h4>
+                  <div id="estatisticas" class="row"></div>
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card my-2">
+                        <div class="card-header">
+                          <h4 class="card-title pt-2">Seus móveis cadastrados e alugados</h4>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="graficoMoveis"
+                            style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="card my-2">
+                        <div class="card-header">
+                          <h4 class="card-title pt-2">Relatório de ganhos</h4>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="graficoGanhos"
+                            style="min-height: 250px; height: 350px; max-height: 350px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="card my-2">
+                        <div class="card-header">
+                          <h4 class="card-title pt-2">Relatório de gastos</h4>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="graficoGastos"
+                            style="min-height: 250px; height: 350px; max-height: 350px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-editar" role="tabpanel" aria-labelledby="v-pills-editar-tab">
+                  <h4 class="mb-3">Editar</h4>
+                  <form method="post" id="form">
+                    <div class="row mb-2">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="foto">Imagem</label>
+                          <div class="input-group">
+                            <div class="custom-file btn btn-light text-center">
+                              <input class="custom-file-input d-none" type="file" name="foto" id="foto"
+                                accept="image/*">
+                              <label for="foto" class="w-100 text-center pt-2">Escolher</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <img src="/img/default.png" alt="img" id="imagem" class="w-100 h-100"
+                          style="object-fit: contain; border-radius: 10px;">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="usuario">Usuário</label>
+                      <input class="form-control" type="text" name="usuario" id="usuario" maxlength="20" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="email">E-mail</label>
+                      <input class="form-control" type="email" name="email" id="email" maxlength="200" required
+                        disabled>
+                    </div>
+                    <div class="form-group">
+                      <label for="celular">Celular</label>
+                      <input class="form-control" type="text" name="celular" id="celular" maxlength="15" minlength="14"
+                        required>
+                    </div>
+                    <div class="form-group">
+                      <label for="cpf">CPF</label>
+                      <input class="form-control" type="text" name="cpf" id="cpf" maxlength="14" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="cep">CEP</label>
+                      <input class="form-control" type="text" name="cep" id="cep" maxlength="9" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="bairro">Bairro</label>
+                      <input class="form-control" type="text" name="bairro" id="bairro" maxlength="100" required
+                        disabled>
+                    </div>
+                    <div class="form-group">
+                      <label for="cidade">Cidade</label>
+                      <input class="form-control" type="text" name="cidade" id="cidade" maxlength="100" required
+                        disabled>
+                    </div>
+                    <div class="form-group">
+                      <label for="complemento">Complemento</label>
+                      <input class="form-control" type="text" name="complemento" id="complemento" maxlength="100"
+                        required>
+                    </div>
+                    <div class="form-group">
+                      <label for="logradouro">Logradouro</label>
+                      <input class="form-control" type="text" name="logradouro" id="logradouro" maxlength="100" required
+                        disabled>
+                    </div>
+                    <div class="form-group">
+                      <label for="uf">UF</label>
+                      <input class="form-control" type="text" name="uf" id="uf" maxlength="100" required disabled>
+                    </div>
+                    <div class="form-group">
+                      <input class="btn btn-primary bg-primary btn-lg" type="submit" value="Atualizar">
+                    </div>
+                  </form>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-pagamento" role="tabpanel"
+                  aria-labelledby="v-pills-pagamento-tab">
+                  <div class="d-flex flex-row justify-content-between align-items-center">
+                    <h4 class="mb-3">Meios de Pagamento</h4>
+                    <button id="btn-add-pagamento" class="btn btn-primary bg-primary"><i
+                        class="fa fa-plus"></i></button>
+                  </div>
+                  <div class="row pagamentos"></div>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-historico" role="tabpanel"
+                  aria-labelledby="v-pills-historico-tab">
+                  <h4 class="mb-3">Histórico</h4>
+                  <div class="row historico"></div>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-moveis" role="tabpanel" aria-labelledby="v-pills-moveis-tab">
+                  <h4 class="mb-3">Meus Móveis</h4>
+                  <div class="row moveis"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const { log } = console
+
+    numeral.locale('pt-br')
+    $(document).ready(() => {
+      const fcelular = celular => celular?.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3') || ''
+      const fdata = data => new Date(data).toLocaleString('en-GB', { timeZone: 'America/Sao_Paulo' })
+      const maskBehavior = val => val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00000',
+        options = {
+          onKeyPress: function (val, e, field, options) {
+            field.mask(maskBehavior.apply({}, arguments), options)
+          }
+        }
+      $('#celular').mask(maskBehavior, options)
+      $('#cep').mask('00000-000')
+      $('#cpf').mask('000.000.000-00')
+      $('#cep').on('change keyup', function () {
+        const _cep = $(this).val()
+        _cep.length === 9 &&
+          $.get(`https://viacep.com.br/ws/${_cep}/json/`)
+            .then(d => {
+              log('viacep', d)
+              $('#bairro').val(d.bairro || '')
+              $('#cidade').val(d.localidade || '')
+              $('#complemento').val(d.complemento || '')
+              $('#logradouro').val(d.logradouro || '')
+              $('#uf').val(d.uf || '')
+            })
+            .catch(log)
+      })
+
+      $('#btn-add-pagamento').on('click', () => Swal.mixin({
+        confirmButtonText: 'Próximo',
+        showCancelButton: true,
+        progressSteps: ['1', '2', '3']
+      }).queue([
+        {
+          title: 'Número do Cartão:',
+          input: 'text',
+          inputAttributes: { id: 'numeroinput', placeholder: '0000 0000 0000 0000' },
+          preConfirm: result => {
+            try {
+              if (result.length !== 19) throw 'Número inválido'
+              if (!result.match(/\d{4}\s\d{4}\s\d{4}\s\d{4}/)) throw 'Número inválido'
+              return result
+            } catch (e) {
+              Swal.showValidationMessage(e)
+              return false
+            }
+          },
+          didOpen: el => $(el).find('#numeroinput').mask('0000 0000 0000 0000')
+        },
+        {
+          title: 'Validade:',
+          input: 'text',
+          inputAttributes: { id: 'validadeinput', placeholder: 'mm/aa' },
+          preConfirm: result => {
+            try {
+              if (result.length !== 5) throw 'Validade inválida'
+              const match = result.match(/(\d{2})\/(\d{2})/)
+              if (!match) throw 'Validade inválida'
+              if (isNaN(match[1]) || match[1] < 1 || match[1] > 12) throw 'Validade inválida'
+              if (isNaN(match[2]) || match[2] < 20) throw 'Validade inválida'
+              return result
+            } catch (e) {
+              Swal.showValidationMessage(e)
+              return false
+            }
+          },
+          didOpen: el => $(el).find('#validadeinput').mask('00/00')
+        },
+        {
+          title: 'CVV:',
+          input: 'text',
+          inputAttributes: { id: 'cvvinput', placeholder: '000' },
+          preConfirm: result => {
+            try {
+              if (result.length !== 3) throw 'CVV inválido'
+              if (!result.match(/\d{3}/)) throw 'CVV inválido'
+              return result
+            } catch (e) {
+              Swal.showValidationMessage(e)
+              return false
+            }
+          },
+          didOpen: el => $(el).find('#cvvinput').mask('000')
+        },
+      ]).then(result => {
+        if (result.value) {
+          const [numero, validade, cvv] = result.value
+          Swal.fire({
+            title: 'Adicionando cartão...',
+            html: `
+            <h5>Número: ${numero}</h5>
+            <h5>Validade: ${validade}</h5>
+            <h5> CVV: ${cvv}</h5>
+            `,
+            showConfirmButton: false,
+            didOpen: () => {
+              Swal.showLoading()
+              $.post('/api/pagamento/create', { numero, validade, cvv })
+                .then(d => log('info', d) || d)
+                .then(d => Swal.fire({ icon: 'success', title: 'Meio de pagamento adicionado!' }).then(getPagamentos))
+                .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg }))
+            },
+          })
+        }
+      }))
+
+      $.get('/api/perfil/info')
+        .then(d => log('info', d) || d)
+        .then(d => {
+          d.info.acesso < 2 && $('#estatisticas').append(`
+          <div class="col-12 d-flex">
+            <div class="card bg-danger my-2 flex-fill">
+              <div class="card-body text-center text-white">
+                <h4>Verifique sua conta</h4>
+                <small>Vá para a aba "editar" e cadastre seu CEP e CPF</small>
+              </div>
+            </div>
+          </div>
+          `)
+          d.data.forEach(v => $('#estatisticas').append(`
+          <div class="col-md-6 d-flex">
+            <div class="card my-2 flex-fill">
+              <div class="card-body text-center">
+                <h5>${v.nome}</h5>
+                <h1>${v.valor}</h1>
+              </div>
+            </div>
+          </div>
+          `))
+          if (d.data[0].valor === 0) {
+            $('#graficoMoveis').hide()
+            $('#graficoMoveis').before(`
+            <div class="w-100 text-center">
+              <p class="py-5">Não há móveis cadastrados</p>
+            <div>
+            `)
+          } else {
+            const _cadastrados = d.data.find(f => f.nome === 'Seus Móveis Cadastrados').valor
+            const _disponiveis = d.data.find(f => f.nome === 'Seus Móveis Disponíveis').valor
+            const __cadastrados = _cadastrados - _disponiveis
+            const _cadastradosAlugados = new Chart($('#graficoMoveis').get(0).getContext('2d'), {
+              type: 'doughnut', // #00a65a #f56954
+              data: {
+                labels: ['Alugados', 'Disponíveis'],
+                datasets: [{
+                  data: [__cadastrados, _disponiveis],
+                  backgroundColor: ['#f56954', '#00a65a'],
+                },
+                ],
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+              },
+            })
+          }
+
+          $('#usuario').val(d.info.usuario || '')
+          $('#email').val(d.info.email || '')
+          $('#celular').val(d.info?.celular?.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3') || '')
+          $('#cep').val(d.info?.cep?.replace(/(\d{5})(\d{2})/, '$1-$2') || '')
+          $('#cpf').val(d.info?.cpf?.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') || '')
+          $('#bairro').val(d.info.bairro || '')
+          $('#cidade').val(d.info.cidade || '')
+          $('#complemento').val(d.info.complemento || '')
+          $('#logradouro').val(d.info.logradouro || '')
+          $('#uf').val(d.info.uf || '')
+          $('#imagem').attr('src', `/img/${d.info.foto}`)
+
+          if (d.relatorio.ganhos.length === 0) {
+            $('#graficoGanhos').hide()
+            $('#graficoGanhos').before(`
+            <div class="w-100 text-center">
+              <p class="py-5">Não há relatório para ser exibido</p>
+            <div>
+            `)
+          } else {
+            const _gGanhos = new Chart($('#graficoGanhos').get(0).getContext('2d'), {
+              type: 'bar', // #00a65a #f56954
+              data: {
+                labels: d.relatorio.ganhos.map(v => v.mes),
+                datasets: [
+                  {
+                    label: 'Ganhos',
+                    backgroundColor: '#00a65a',
+                    data: d.relatorio.ganhos.map(v => v.total),
+                  },
+                ],
+              },
+              options: {
+                scales: {
+                  xAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Mês',
+                    },
+                    gridLines: {
+                      offsetGridLines: true,
+                    },
+                  }],
+                  yAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Valor (R$)',
+                    },
+                    ticks: {
+                      beginAtZero: true,
+                    },
+                    gridLines: {
+                      offsetGridLines: true,
+                    },
+                  }],
+                },
+              },
+            })
+          }
+          if (d.relatorio.gastos.length === 0) {
+            $('#graficoGastos').hide()
+            $('#graficoGastos').before(`
+            <div class="w-100 text-center">
+              <p class="py-5">Não há relatório para ser exibido</p>
+            <div>
+            `)
+          } else {
+            const _gGastos = new Chart($('#graficoGastos').get(0).getContext('2d'), {
+              type: 'bar', // #00a65a #f56954
+              data: {
+                labels: d.relatorio.gastos.map(v => v.mes),
+                datasets: [
+                  {
+                    label: 'Gastos',
+                    backgroundColor: '#f56954',
+                    data: d.relatorio.gastos.map(v => v.total),
+                  },
+                ],
+              },
+              options: {
+                scales: {
+                  xAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Mês',
+                    },
+                    gridLines: {
+                      offsetGridLines: true,
+                    },
+                  }],
+                  yAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Valor (R$)',
+                    },
+                    ticks: {
+                      beginAtZero: true,
+                    },
+                    gridLines: {
+                      offsetGridLines: true,
+                    },
+                  }],
+                },
+              },
+            })
+          }
+        })
+        .catch(e => e.status === 401 && Swal.fire({ icon: 'error', title: 'Entre para acessar esta página' }).then(() => location = '/entrar'))
+
+      const getHistorico = () => $.get('/api/historico')
+        .then(d => log('historico', d) || d)
+        .then(d => {
+          $('.historico').html('')
+          const _status = {
+            'ativo': '<h5 class="text-warning py-2">Ativo</h5>',
+            'cancelado': '<h5 class="text-danger py-2">Cancelado</h5>',
+            'conluido': '<h5 class="text-success py-2">Conluído</h5>',
+          }
+          if (d.data.length === 0) {
+            $('.historico').append(`
+            <div class="col-12 text-center">
+              <p class="py-5">Não há nada no histórico</p>
+            <div>
+            `)
+            return
+          }
+          d.data.forEach(v => {
+            const _el = $(`
+            <div class="col-12 my-1">
+              <div class="card p-1">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-8 pr-2 border-right">
+                      <h5>${v.nome}</h5>
+                      <small>${v.categoria}</small>
+                      ${_status[v.status]}
+                      <h5>Total: R$ ${`${v.total.toFixed(2)}`.replace('.', ',')}</h5>
+                      <!-- <p>Frete: R$ ${`${v.valorFrete.toFixed(2)}`.replace('.', ',')}</p> -->
+                      <small>Custo mensal: R$ ${`${v.valorMes.toFixed(2)}`.replace('.', ',')}/mês</small>
+                      <br>
+                      <small>Locador: ${v.locador} - ${v.email} - ${fcelular(v.celular)}</small>
+                      <br>
+                      <small>Início: ${fdata(v.dataInicio)}</small>
+                      <br>
+                      <small>Fim: ${fdata(v.dataFim).match(/(\d{2}\/\d{2}\/\d{4})/)[1]}</small>
+                    </div>
+                    <div class="col-4">
+                      <div class="row">
+                        <div class="col-12">
+                          <img src="/img/${v.imagem}" class="w-100 h-100" style="object-fit: contain;"/>
+                        </div>
+                        <div class="col-md-6 col-12 my-2 edit-div"></div>
+                        <div class="col-md-6 col-12 my-2 delete-div"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            `)
+            if (v.status === 'ativo') {
+              const _delbtn = $(`<button class="btn btn-danger mx-0 w-100"><i class="far fa-trash-alt"></i></button>`)
+              _delbtn.on('click', () => Swal.fire({
+                icon: 'warning',
+                title: 'Deseja cancelar este aluguel?',
+                showDenyButton: true,
+                confirmButtonText: `Sim`,
+                denyButtonText: `Não`,
+              }).then(result => result.isConfirmed && $.get(`/api/aluguel/cancel/${v.id}`)
+                .then(d => log('cancel', d) || Swal.fire({ icon: 'success', title: d.msg }).then(getHistorico))
+                .catch(log))
+              )
+              _el.find('.delete-div').html(_delbtn)
+            }
+            $('.historico').append(_el)
+          })
+        })
+        .catch(e => e.status === 401 && Swal.fire({ icon: 'error', title: 'Entre para acessar esta página' }).then(() => location = '/entrar'))
+
+      getHistorico()
+
+      const getMoveis = () => $.get('/api/moveis')
+        .then(d => log('moveis', d) || d)
+        .then(d => {
+          $('.moveis').html('')
+          const _status = {
+            'disponivel': '<h5 class="text-success">Disponível</h5>',
+            'indisponivel': '<h5 class="text-danger">Indisponível</h5>',
+          }
+          if (d.data.length === 0) {
+            $('.moveis').append(`
+            <div class="col-12 text-center">
+              <p class="py-5">Não há móveis cadastrados</p>
+            <div>
+            `)
+            return
+          }
+          d.data.forEach(v => {
+            let col = $(`
+            <div class="col-12 my-1">
+              <div class="card p-1">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-8 pr-2 border-right">
+                      <h5>${v.nome}</h5>
+                      ${_status[v.status]}
+                      <h6>Categoria: ${v.categoria}</h6>
+                      <p>${v.descricao}</p>
+                      <h6>Custo mensal: R$ ${`${v.valorMes.toFixed(2)}`.replace('.', ',')}/mês</h6>
+                      <small>Cadastrado em: ${fdata(v.data)}</small>
+                    </div>
+                    <div class="col-4">
+                      <div class="row">
+                        <div class="col-12">
+                          <img src="/img/${v.imagem}" class="w-100 h-100" style="object-fit: contain;"/>
+                        </div>
+                        <div class="col-md-6 col-12 my-2 edit-div"></div>
+                        <div class="col-md-6 col-12 my-2 delete-div"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            `)
+            let editbtn = $(`<button class="btn btn-info mx-0 w-100"><i class="fas fa-edit"></i></button>`)
+            editbtn.on('click', () => {
+              const _el = $(`
+              <form method="post" id="mform" enctype="multipart/form-data">
+                <div class="card my-4 text-left">
+                  <div class="card-body">
+                    <div class="row my-2">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="nome">Nome</label>
+                          <input class="form-control" type="text" name="nome" id="nome" autocomplete="new-password" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="categoriaId">Categoria</label>
+                          <select class="form-control" name="categoriaId" id="categoriaId" required></select>
+                        </div>
+                        <div class="form-group">
+                          <label for="mfoto">Imagem</label>
+                          <div class="input-group">
+                            <div class="custom-file btn btn-light text-center">
+                              <input class="custom-file-input d-none" type="file" name="foto" id="mfoto" accept="image/*">
+                              <label for="mfoto" class="w-100 text-center pt-2">Escolher</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <img src="/img/default.png" alt="img" id="mimagem" class="w-100 h-100"
+                          style="object-fit: contain; border-radius: 10px;">
+                      </div>
+                    </div>
+                    <div class="row my-2">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="descricao">Descrição</label>
+                          <textarea class="form-control" type="text" name="descricao" id="descricao" autocomplete="new-password"
+                            style="min-height: 38px;" required></textarea>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="valorMes">Valor Mês</label>
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">R$</span>
+                          </div>
+                          <input class="form-control" type="text" name="valorMes" id="valorMes" autocomplete="new-password"
+                            maxlength="6" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row my-2">
+                      <div class="col-md-4">
+                        <label for="altura">Altura (m)</label>
+                        <div class="input-group">
+                          <input class="form-control" type="number" name="altura" id="altura" autocomplete="new-password"
+                            step="0.01" min="0.01" max="4" value="1" required>
+                          <div class="input-group-append">
+                            <span class="input-group-text">m</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label for="largura">Largura (m)</label>
+                        <div class="input-group">
+                          <input class="form-control" type="number" name="largura" id="largura" autocomplete="new-password"
+                            step="0.01" min="0.01" max="4" value="1" required>
+                          <div class="input-group-append">
+                            <span class="input-group-text">m</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label for="espessura">Espessura (m)</label>
+                        <div class="input-group">
+                          <input class="form-control" type="number" name="espessura" id="espessura" autocomplete="new-password"
+                            step="0.01" min="0.01" max="4" value="1" required>
+                          <div class="input-group-append">
+                            <span class="input-group-text">m</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              `)
+              Swal.fire({
+                title: 'Editar Móvel',
+                html: _el,
+                width: '80vw',
+                confirmButtonText: `Salvar`,
+                showCancelButton: true,
+                cancelButtonText: `Cancelar`,
+                preConfirm: async () => {
+                  return await new Promise((resolve, reject) => {
+                    try {
+                      const swal = $(Swal.getContent())
+                      Swal.enableLoading()
+                      swal.find('#mform').on('submit', function () {
+                        const form = $(this)
+                        let formdata = false
+                        if (window.FormData) formdata = new FormData(form[0])
+                        const _valorMes = swal.find('#valorMes').val()
+                        formdata.set('valorMes', numeral(_valorMes).format('$0.00').replace('R$', '').replace('.', '').replace(',', '.'))
+                        formdata.set('id', v.id)
+                        $.ajax({
+                          url: '/api/moveis/update',
+                          data: formdata ? formdata : form.serialize(),
+                          cache: false,
+                          contentType: false,
+                          processData: false,
+                          type: 'POST',
+                        })
+                          .then(d => log(d) || resolve(d.msg) || Swal.fire({ icon: 'success', title: d.msg }).then(getMoveis))
+                          .catch(e => log(e) || Swal.showValidationMessage(`Atenção: ${e.responseJSON.msg}`) || Swal.disableLoading())
+                          .finally(() => Swal.enableButtons() || Swal.disableLoading())
+
+                        return false
+                      })
+                      swal.find('#mform').submit()
+                    } catch (e) {
+                      log('three', e) || reject(e) || Swal.disableLoading()
+                    }
+                  })
+                    .finally(f => log(44444, f) && Swal.enableButtons())
+                },
+                willOpen: $.get('/api/categorias')
+                  .then(d => log('four', d) || d)
+                  .then(d => d.data.forEach(i => {
+                    const swal = $(Swal.getContent())
+                    swal.find('#nome').val(v.nome)
+                    swal.find('#mimagem').attr('src', `/img/${v.imagem}`)
+                    swal.find('#mfoto').on('change', function () {
+                      if (this.files && this.files[0]) {
+                        const reader = new FileReader()
+                        reader.onload = e => $('#mimagem').attr('src', e.target.result)
+                        reader.readAsDataURL(this.files[0])
+                      }
+                    })
+                    swal.find('#descricao').val(v.descricao)
+                    swal.find('#valorMes').val(numeral(v.valorMes).format('$0.00').replace('R$', ''))
+                    swal.find('#valorMes').on('change', function () {
+                      let val = $(this).val()
+                      val = numeral(val).format('$0.00').replace('R$', '')
+                      $(this).val(val)
+                    })
+                    swal.find('#categoriaId').append(`<option value="${i.id}">${i.nome}</option>`)
+                    swal.find('#categoriaId').val(v.categoriaId)
+                    swal.find('#altura').val(parseFloat(v.altura).toFixed(2))
+                    swal.find('#largura').val(parseFloat(v.largura).toFixed(2))
+                    swal.find('#espessura').val(parseFloat(v.espessura).toFixed(2))
+                  }))
+                  .catch(log),
+              })
+            })
+            let deletebtn = $(`<button class="btn btn-danger mx-0 w-100"><i class="far fa-trash-alt"></i></button>`)
+            deletebtn.on('click', () => Swal.fire({
+              icon: 'warning',
+              title: 'Deseja excluir este móvel?',
+              showDenyButton: true,
+              confirmButtonText: `Sim`,
+              denyButtonText: `Não`,
+            }).then(result => result.isConfirmed && $.get(`/api/movel/delete/${v.id}`)
+              .then(d => log('delete', d) || Swal.fire({ icon: 'success', title: d.msg }).then(getMoveis))
+              .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg }))))
+            col.find('.edit-div').html(editbtn)
+            col.find('.delete-div').html(deletebtn)
+            $('.moveis').append(col)
+          })
+        })
+        .catch(e => e.status === 401 && Swal.fire({ icon: 'error', title: 'Entre para acessar esta página' }).then(() => location = '/entrar'))
+
+      getMoveis()
+
+      const getPagamentos = () => $.get('/api/pagamentos')
+        .then(d => log('pagamentos', d) || d)
+        .then(d => {
+          $('.pagamentos').html('')
+          const _status = {
+            'disponivel': '<h5 class="text-success">Disponível</h5>',
+            'indisponivel': '<h5 class="text-danger">Indisponível</h5>',
+          }
+          if (d.data.length === 0) return $('.pagamentos').append(`
+          <div class="col-12 text-center">
+            <p class="py-5">Não há meios de pagamento cadastrados</p>
+          <div>
+          `)
+          d.data.forEach(v => {
+            let col = $(`
+            <div class="col-12 my-1">
+              <div class="card p-1">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-10 pr-2 border-right">
+                      <h3>${v.tipo}</h3>
+                      <h5>Número: ${v.numero.replace(/(.{4})(.{4})(.{4})(.{4})/, '$1 $2 $3 $4')}</h5>
+                      <h5>Validade: ${v.validade}</h5>
+                      <h5>CVV: ${v.cvv}</h5>
+                    </div>
+                    <div class="col-2">
+                      <div class="row">
+                        <div class="col-12 my-2 delete-div"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            `)
+            /* let editbtn = $(`<button class="btn btn-info mx-0 w-100"><i class="fas fa-edit"></i></button>`)
+            editbtn.on('click', () => {
+              const _el = $(`
+              <form method="post" id="mform" enctype="multipart/form-data">
+                <div class="card my-4 text-left">
+                  <div class="card-body">
+                    <div class="row my-2">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="nome">Nome</label>
+                          <input class="form-control" type="text" name="nome" id="nome" autocomplete="new-password" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="categoriaId">Categoria</label>
+                          <select class="form-control" name="categoriaId" id="categoriaId" required></select>
+                        </div>
+                        <div class="form-group">
+                          <label for="mfoto">Imagem</label>
+                          <div class="input-group">
+                            <div class="custom-file btn btn-light text-center">
+                              <input class="custom-file-input d-none" type="file" name="foto" id="mfoto" accept="image/*">
+                              <label for="mfoto" class="w-100 text-center pt-2">Escolher</label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <img src="/img/default.png" alt="img" id="mimagem" class="w-100 h-100"
+                          style="object-fit: contain; border-radius: 10px;">
+                      </div>
+                    </div>
+                    <div class="row my-2">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="descricao">Descrição</label>
+                          <textarea class="form-control" type="text" name="descricao" id="descricao" autocomplete="new-password"
+                            style="min-height: 38px;" required></textarea>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="valorMes">Valor Mês</label>
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text">R$</span>
+                          </div>
+                          <input class="form-control" type="text" name="valorMes" id="valorMes" autocomplete="new-password"
+                            maxlength="6" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row my-2">
+                      <div class="col-md-4">
+                        <label for="altura">Altura (m)</label>
+                        <div class="input-group">
+                          <input class="form-control" type="number" name="altura" id="altura" autocomplete="new-password"
+                            step="0.01" min="0.01" max="4" value="1" required>
+                          <div class="input-group-append">
+                            <span class="input-group-text">m</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label for="largura">Largura (m)</label>
+                        <div class="input-group">
+                          <input class="form-control" type="number" name="largura" id="largura" autocomplete="new-password"
+                            step="0.01" min="0.01" max="4" value="1" required>
+                          <div class="input-group-append">
+                            <span class="input-group-text">m</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label for="espessura">Espessura (m)</label>
+                        <div class="input-group">
+                          <input class="form-control" type="number" name="espessura" id="espessura" autocomplete="new-password"
+                            step="0.01" min="0.01" max="4" value="1" required>
+                          <div class="input-group-append">
+                            <span class="input-group-text">m</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              `)
+              Swal.fire({
+                title: 'Editar Móvel',
+                html: _el,
+                width: '80vw',
+                confirmButtonText: `Salvar`,
+                showCancelButton: true,
+                cancelButtonText: `Cancelar`,
+                preConfirm: async () => {
+                  return await new Promise((resolve, reject) => {
+                    try {
+                      const swal = $(Swal.getContent())
+                      Swal.enableLoading()
+                      swal.find('#mform').on('submit', function () {
+                        const form = $(this)
+                        let formdata = false
+                        if (window.FormData) formdata = new FormData(form[0])
+                        const _valorMes = swal.find('#valorMes').val()
+                        formdata.set('valorMes', numeral(_valorMes).format('$0.00').replace('R$', '').replace('.', '').replace(',', '.'))
+                        formdata.set('id', v.id)
+                        $.ajax({
+                          url: '/api/moveis/update',
+                          data: formdata ? formdata : form.serialize(),
+                          cache: false,
+                          contentType: false,
+                          processData: false,
+                          type: 'POST',
+                        })
+                          .then(d => log(d) || resolve(d.msg) || Swal.fire({ icon: 'success', title: d.msg }).then(getMoveis))
+                          .catch(e => log(e) || Swal.showValidationMessage(`Atenção: ${e.responseJSON.msg}`) || Swal.disableLoading())
+                          .finally(() => Swal.enableButtons() || Swal.disableLoading())
+
+                        return false
+                      })
+                      swal.find('#mform').submit()
+                    } catch (e) {
+                      log('three', e) || reject(e) || Swal.disableLoading()
+                    }
+                  })
+                    .finally(f => log(44444, f) && Swal.enableButtons())
+                },
+                willOpen: $.get('/api/categorias')
+                  .then(d => log('four', d) || d)
+                  .then(d => d.data.forEach(i => {
+                    const swal = $(Swal.getContent())
+                    swal.find('#nome').val(v.nome)
+                    swal.find('#mimagem').attr('src', `/img/${v.imagem}`)
+                    swal.find('#mfoto').on('change', function () {
+                      if (this.files && this.files[0]) {
+                        const reader = new FileReader()
+                        reader.onload = e => $('#mimagem').attr('src', e.target.result)
+                        reader.readAsDataURL(this.files[0])
+                      }
+                    })
+                    swal.find('#descricao').val(v.descricao)
+                    swal.find('#valorMes').val(numeral(v.valorMes).format('$0.00').replace('R$', ''))
+                    swal.find('#valorMes').on('change', function () {
+                      let val = $(this).val()
+                      val = numeral(val).format('$0.00').replace('R$', '')
+                      $(this).val(val)
+                    })
+                    swal.find('#categoriaId').append(`<option value="${i.id}">${i.nome}</option>`)
+                    swal.find('#categoriaId').val(v.categoriaId)
+                    swal.find('#altura').val(parseFloat(v.altura).toFixed(2))
+                    swal.find('#largura').val(parseFloat(v.largura).toFixed(2))
+                    swal.find('#espessura').val(parseFloat(v.espessura).toFixed(2))
+                  }))
+                  .catch(log),
+              })
+            }) */
+            let deletebtn = $(`<button class="btn btn-danger mx-0 w-100"><i class="far fa-trash-alt"></i></button>`)
+            deletebtn.on('click', () => Swal.fire({
+              icon: 'warning',
+              title: 'Deseja remover este meio de pagamento?',
+              showDenyButton: true,
+              confirmButtonText: `Sim`,
+              denyButtonText: `Não`,
+            }).then(result => result.isConfirmed && $.get(`/api/pagamento/delete/${v.id}`)
+              .then(d => log('delete', d) || Swal.fire({ icon: 'success', title: d.msg }).then(getPagamentos))
+              .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg }))))
+            //col.find('.edit-div').html(editbtn)
+            col.find('.delete-div').html(deletebtn)
+            $('.pagamentos').append(col)
+          })
+        })
+        .catch(e => e.status === 401 && Swal.fire({ icon: 'error', title: 'Entre para acessar esta página' }).then(() => location = '/entrar'))
+
+      $('#v-pills-pagamento-tab').on('click', getPagamentos)
+
+      $('#form').on('submit', function () {
+        const cpf = $('#cpf').val().replace(/[\.\-]/, '')
+        if (!validarCPF(cpf)) {
+          Swal.fire({ icon: 'error', title: 'CPF inválido' })
+          return false
+        }
+        const form = $(this)
+        let formdata = new FormData()
+        if (window.FormData) formdata = new FormData(form[0])
+        formdata.append('bairro', $('#bairro').val())
+        formdata.append('cidade', $('#cidade').val())
+        formdata.append('email', $('#email').val())
+        formdata.append('logradouro', $('#logradouro').val())
+        formdata.append('uf', $('#uf').val())
+        $.ajax({
+          url: '/api/usuario/update',
+          data: formdata ? formdata : form.serialize(),
+          cache: false,
+          contentType: false,
+          processData: false,
+          type: 'POST',
+        })
+          .then(d => log(d) || d)
+          .then(d => Swal.fire({ icon: 'success', title: d.msg }).then(() => location = '/perfil'))
+          .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg }))
+        return false
+      })
+
+      $('#foto').on('change', function () {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader()
+          reader.onload = e => $('#imagem').attr('src', e.target.result)
+          reader.readAsDataURL(this.files[0])
+        }
+      })
+
+      function validarCPF(cpf) {
+        cpf = cpf.replace(/[^\d]+/g, '')
+        if (cpf == '') return false
+        if (cpf.length !== 11 ||
+          cpf == "00000000000" ||
+          cpf == "11111111111" ||
+          cpf == "22222222222" ||
+          cpf == "33333333333" ||
+          cpf == "44444444444" ||
+          cpf == "55555555555" ||
+          cpf == "66666666666" ||
+          cpf == "77777777777" ||
+          cpf == "88888888888" ||
+          cpf == "99999999999")
+          return false
+        let add = 0
+        for (let i = 0; i < 9; i++)
+          add += parseInt(cpf.charAt(i)) * (10 - i)
+        let rev = 11 - (add % 11)
+        if (rev == 10 || rev == 11)
+          rev = 0
+        if (rev != parseInt(cpf.charAt(9)))
+          return false
+        add = 0
+        for (let i = 0; i < 10; i++)
+          add += parseInt(cpf.charAt(i)) * (11 - i)
+        rev = 11 - (add % 11)
+        if (rev == 10 || rev == 11)
+          rev = 0
+        if (rev != parseInt(cpf.charAt(10)))
+          return false
+        return true
+      }
+
+    })
+  </script>
+
+  <%- include('footer.ejs') %>
+
+</body>
+
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <%- include('head.ejs') %>
+</head>
+
+<body>
+
+  <%- include('header.ejs', { page }) %>
+
+  <main class="mb-4" style="min-height: 100vh;">
+    <div
+      style="height: 300px; backdrop-filter: brightness(50%); background-image: url(../img/<%= include('cover.ejs') %>); background-size: cover">
+      <div class="w-100 h-100 d-flex justify-content-center align-items-center text-center"
+        style="backdrop-filter: brightness(50%)">
+        <h1 class="text-white">Cadastrar Móvel</h1>
+      </div>
+    </div>
+    <div class="container mt-4">
+      <form method="post" id="form" enctype="multipart/form-data">
+        <div class="card my-4 text-left">
+          <div class="card-body">
+            <div class="row my-2">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="nome">Nome</label>
+                  <input class="form-control" type="text" name="nome" id="nome" autocomplete="new-password" required>
+                </div>
+                <div class="form-group">
+                  <label for="categoriaId">Categoria</label>
+                  <select class="form-control" name="categoriaId" id="categoriaId" required></select>
+                </div>
+                <div class="form-group">
+                  <label for="foto">Imagem</label>
+                  <div class="input-group">
+                    <div class="custom-file btn btn-light text-center">
+                      <input class="custom-file-input d-none" type="file" name="foto" id="foto" accept="image/*" required>
+                      <label for="foto" class="w-100 text-center pt-2">Escolher</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <img src="/img/default.png" alt="img" id="imagem" class="w-100 h-100"
+                  style="object-fit: contain; border-radius: 10px;">
+              </div>
+            </div>
+            <div class="row my-2">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="descricao">Descrição</label>
+                  <textarea class="form-control" type="text" name="descricao" id="descricao" autocomplete="new-password"
+                    style="min-height: 38px;" required></textarea>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="valorMes">Valor Mês</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">R$</span>
+                  </div>
+                  <input class="form-control" type="text" name="valorMes" id="valorMes" autocomplete="new-password"
+                    maxlength="6" required>
+                </div>
+              </div>
+            </div>
+            <div class="row my-2">
+              <div class="col-md-4">
+                <label for="altura">Altura (m)</label>
+                <div class="input-group">
+                  <input class="form-control" type="number" name="altura" id="altura" autocomplete="new-password"
+                    step="0.01" min="0.01" max="4" value="1.00" required>
+                  <div class="input-group-append">
+                    <span class="input-group-text">m</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="largura">Largura (m)</label>
+                <div class="input-group">
+                  <input class="form-control" type="number" name="largura" id="largura" autocomplete="new-password"
+                    step="0.01" min="0.01" max="4" value="1.00" required>
+                  <div class="input-group-append">
+                    <span class="input-group-text">m</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="espessura">Espessura (m)</label>
+                <div class="input-group">
+                  <input class="form-control" type="number" name="espessura" id="espessura" autocomplete="new-password"
+                    step="0.01" min="0.01" max="4" value="1.00" required>
+                  <div class="input-group-append">
+                    <span class="input-group-text">m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input class="btn btn-lg btn-primary bg-primary" type="submit" value="Cadastrar Móvel">
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const { log } = console
+
+    numeral.locale('pt-br')
+    $(document).ready(() => {
+      $('#form').on('submit', function () {
+        const form = $(this)
+        let formdata = false
+        if (window.FormData) formdata = new FormData(form[0])
+        const _valorMes = $('#valorMes').val()
+        formdata.set('valorMes', numeral(_valorMes).format('$0.00').replace('R$', '').replace('.', '').replace(',', '.'))
+        $.ajax({
+          url: '/api/moveis/create',
+          data: formdata ? formdata : form.serialize(),
+          cache: false,
+          contentType: false,
+          processData: false,
+          type: 'POST',
+        })
+          .then(d => log(d) || d)
+          .then(d => Swal.fire({ icon: 'success', title: d.msg }).then(() => location = '/'))
+          .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg }))
+
+        return false
+      })
+      $.get('/api/categorias')
+        .then(d => log(d) || d)
+        .then(d => d.data.forEach(i => $('#categoriaId').append(`<option value="${i.id}">${i.nome}</option>`)))
+        .catch(log)
+      $('#foto').on('change', function () {
+        if (this.files && this.files[0]) {
+          const reader = new FileReader()
+          reader.onload = e => $('#imagem').attr('src', e.target.result)
+          reader.readAsDataURL(this.files[0])
+        }
+      })
+      $('#valorMes').on('change', function () {
+        let val = $(this).val()
+        val = numeral(val).format('$0.00').replace('R$', '')
+        $(this).val(val)
+      })
+    })
+  </script>
+
+  <%- include('footer.ejs') %>
+
+</body>
+
+</html>

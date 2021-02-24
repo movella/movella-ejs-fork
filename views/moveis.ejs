@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <%- include('head.ejs') %>
+  <style>
+    .c-disabled {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <%- include('header.ejs', { page }) %>
+
+  <main class="mb-4" style="min-height: 100vh;">
+    <div
+      style="height: 300px; backdrop-filter: brightness(50%); background-image: url(../img/<%= include('cover.ejs') %>); background-size: cover">
+      <div class="w-100 h-100 d-flex justify-content-center align-items-center text-center"
+        style="backdrop-filter: brightness(50%)">
+        <h1 class="text-white">Móveis</h1>
+      </div>
+    </div>
+    <div class="container mt-4">
+
+      <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Móvel</h5>
+              <button type="button" class="close modal-fechar" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p>Alugue este móvel.</p>
+            </div>
+            <div class="modal-footer"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 col-md-3">
+          <div class="card my-2">
+            <div class="card-body">
+              <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical"></div>
+            </div>
+          </div>
+          <div class="card my-2">
+            <div class="card-body">
+              <h4>Ordenar por</h4>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-menor-preco"
+                  value="valorMes asc">
+                <label class="form-check-label" for="ordena-menor-preco">Menor Preço</label>
+              </div>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-maior-preco"
+                  value="valorMes desc">
+                <label class="form-check-label" for="ordena-maior-preco">Maior Preço</label>
+              </div>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-maior-avaliacao"
+                  value="avaliacao desc">
+                <label class="form-check-label" for="ordena-maior-avaliacao">Melhor Avaliação</label>
+              </div>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-alfabetica" value="nome asc"
+                  checked>
+                <label class="form-check-label" for="ordena-alfabetica">Ordem Alfabética</label>
+              </div>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-novos" value="data desc">
+                <label class="form-check-label" for="ordena-novos">Mais Novos</label>
+              </div>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-antigos" value="data asc">
+                <label class="form-check-label" for="ordena-antigos">Mais Antigos</label>
+              </div>
+              <% if ((session?.usuario?.acesso || 0) >= 2) { %>
+              <div class="form-check py-2">
+                <input type="radio" class="form-check-input" name="ordenar" id="ordena-proximos" value="distancia asc">
+                <label class="form-check-label" for="ordena-proximos">Mais Próximos</label>
+              </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-9">
+          <div class="tab-content" id="v-pills-tabContent">
+            <div class="tab-pane fade show active" id="v-pills-base" role="tabpanel" aria-labelledby="v-pills-base-tab">
+              <nav aria-label="Paginacao">
+                <ul id="pagination" class="pagination"></ul>
+              </nav>
+              <nav class="mb-3" aria-label="Filtro">
+                <input class="form-control" type="text" id="filtro" maxlength="20" placeholder="Filtro">
+              </nav>
+              <nav class="mb-3" aria-label="Somente disponíveis">
+                <div class="row">
+                  <div class="col">
+                    <div class="form-check py-2">
+                      <input type="checkbox" class="form-check-input" id="disponiveis">
+                      <label class="form-check-label" for="disponiveis">Somente disponíveis</label>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="form-inline justify-content-end">
+                      <label for="quantidade" class="px-2">Itens por página</label>
+                      <select class="form-control" id="quantidade">
+                        <option>6</option>
+                        <option>12</option>
+                        <option>24</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+              <div class="row px-1 moveis"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <%- session?.usuario || false ? `<script> const __logado = true </script>` : `<script> const __logado = false </script>` %>
+
+  <%- `<script> const __acesso = ${session?.usuario?.acesso || 0} </script>` %>
+
+  <script>
+    const { log } = console
+
+    //log('acesso', __acesso)
+
+    const hoje = () => {
+      let data = new Date()
+      data.setHours(0, 0)
+      return data
+    }
+
+    const hojeData = () => {
+      let data = new Date()
+      data.setHours(0, 0)
+      data.setDate(data.getDate() + 1)
+      return data.toISOString().match(/(\d{4}-\d{2}-\d{2})/)[1]
+    }
+
+    $(document).ready(() => {
+      let categoria = 'Tudo'
+      let pagina = 1
+      let quantidade = 6
+      let disponiveis = false
+      let ordenar = 'nome asc'
+
+      function update(_this) {
+        categoria = $(_this).text().trim() || categoria
+        pagina = pagina <= 1 ? 1 : pagina
+        filtro = $('#filtro').val() || ''
+        disponiveis = $('#disponiveis').prop('checked')
+        quantidade = $('#quantidade').val()
+
+        $.post('/api/moveis', {
+          categoria,
+          pagina,
+          quantidade,
+          filtro,
+          disponiveis,
+          ordenar,
+        }, { headers: { 'Content-Type': 'application/json; charset=utf-8' } })
+          .then(d => log('moveis', d) || d)
+          .then(d => {
+            $('#v-pills-base > .moveis').html('')
+            d.data.moveis.forEach(v => {
+              const _el = $(`
+                <div class="col-6 col-md-4 p-1 movel ${v.status === 'indisponivel' ? 'c-disabled' : ''}">
+                    <div class="card h-100">
+                    <img class="card-img-top" style="height: 150px; object-fit: contain" src="../img/${v.imagem}" alt="${v.nome}">
+                    <div class="card-body">
+                      ${v.nome}
+                      <br>
+                      <small>${v.cidade}</small>
+                      <br>
+                      <small>Por: ${v.usuario}</small>
+                      <b>${v.status === 'disponivel' ? `<p class='text-success'>Disponível</p>` : `<p class='text-danger'>Indisponível</p>`}</b>
+                      <small>Avaliação: ${(v.avaliacao || 0).toFixed(2)}</small>
+                    </div>
+                    <div class="card-footer">
+                      R$ ${`${v.valorMes.toFixed(2)}`.replace('.', ',')}/mês
+                    </div>
+                  </div>
+                </div>
+              `)
+              _el.data({
+                id: v.id,
+                nome: v.nome,
+                descricao: v.descricao,
+                imagem: v.imagem,
+                usuarioId: v.usuarioId,
+                usuario: v.usuario,
+                usuarioimagem: v.usuarioimagem,
+                cidade: v.cidade,
+                valorMes: v.valorMes,
+                status: v.status,
+                altura: v.altura,
+                largura: v.largura,
+                espessura: v.espessura,
+              })
+              $('#v-pills-base > .moveis').append(_el)
+            })
+            if (d.data.moveis.length === 0) $('#v-pills-base > .moveis').append(`<p class="my-5 w-100 text-center">Nenhum registro encontrado</p>`)
+            $('.movel').on('click', function () {
+              const _data = $(this).data()
+              $('.modal').show()
+              const modalBody = $(`
+                <div class="row">
+                  <div class="col-6">
+                    <h2>${_data.nome}</h2>
+                    <p>${_data.descricao}</p>
+                    <p>Cidade: ${_data.cidade}</p>
+                    <p>Valor: R$ ${`${_data.valorMes.toFixed(2)}`.replace('.', ',')}/mês</p>
+                    <small>Dimensões: ${_data.altura}m (altura) x ${_data.largura}m (largura) x ${_data.espessura}m (espessura)</small>
+                    <b>${_data.status === 'disponivel' ? `<p class='text-success my-2'>Disponível</p>` : `<p class='text-danger my-2'>Indisponível</p>`}</b>
+                    <br>
+                    <p>Até quando deseja alugar?</p>
+                    <input class="form-control my-2" type="date" name="data" id="data" min="${hojeData()}" required>
+                    <p>Meio de pagamento:</p>
+                    <select class="form-control my-2 pagamentoselect" required></select>
+                  </div>
+                  <div class="col-6">
+                    <div class="row">
+                      <div class="col-12">
+                        <img class="w-100 h-100" style="object-fit: contain" src="../img/${_data.imagem}" />
+                      </div>
+                      <div class="col-12 pt-2">
+                        <h3>Por:</h3>
+                        <div class="card my-2">
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-7 d-flex justify-content-center">
+                                <h4 class="align-self-center w-100">${_data.usuario}</h4>
+                              </div>
+                              <div class="col-5">
+                                <img src="img/${_data.usuarioimagem}" class="w-100 h-100" style="object-fit: cover; border-radius: 1000px;" />
+                              </div>
+                              ${d.data.session !== undefined && d.data.session.id !== _data.usuarioId ? `
+                                <div class="col-12 text-center my-2">
+                                  <h3>
+                                    <span class="star" id="s_1" data-val="1" data-user="${_data.usuarioId}">☆</span>
+                                    <span class="star" id="s_2" data-val="2" data-user="${_data.usuarioId}">☆</span>
+                                    <span class="star" id="s_3" data-val="3" data-user="${_data.usuarioId}">☆</span>
+                                    <span class="star" id="s_4" data-val="4" data-user="${_data.usuarioId}">☆</span>
+                                    <span class="star" id="s_5" data-val="5" data-user="${_data.usuarioId}">☆</span>
+                                  </h3>
+                                </div>
+                              ` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="info p-2"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `)
+              modalBody.find('#data').on('change', function () {
+                const data = $('#data').val()
+                if (data.length === 0) return Swal.fire({ icon: 'error', title: 'Data não permitida' })
+                if (new Date(data) < hoje()) return Swal.fire({ icon: 'error', title: 'Data não permitida' })
+                const dias = Math.ceil((new Date(data) - hoje()) / (1000 * 60 * 60 * 24))
+                const valor = _data.valorMes * (dias / 30)
+                const frete = 0
+                const total = valor + frete
+                $('.info').html(`
+                <p>Tempo em dias: ${dias}</p>
+                <!-- <p>Valor: R$ ${`${valor.toFixed(2)}`.replace('.', ',')}</p> -->
+                <!-- <p>Frete: R$ ${`${frete.toFixed(2)}`.replace('.', ',')}</p> -->
+                <h5>Valor total: R$ ${`${total.toFixed(2)}`.replace('.', ',')}</h5>
+                `)
+              })
+              $.get('/api/pagamentos')
+                .then(d => {
+                  log('pagamentos', d)
+                  d = d.data
+                  modalBody.find('.pagamentoselect').append(d.map(v => $(`<option value="${v.id}">${v.tipo} - * * * ${v.numero.match(/(\d{4})$/)[1]}</option>`)))
+                })
+                .catch(log)
+              $('.modal-body').html(modalBody)
+              $.get(`/api/avaliacao/${_data.usuarioId}`)
+                .then(d => {
+                  log('avaliacao', d)
+                  d = d.data[0]
+                  d?.avaliacao && rate(d.avaliacao, false)
+                })
+                .catch(log)
+              $('.star').on('click', function () {
+                rate($(this).data('val'), true, $(this).data('user'))
+              })
+              const _btnAlugar = $(`<button type="button" class="btn btn-primary bg-primary modal-alugar ${_data.status === 'indisponivel' ? 'disabled' : ''}">Alugar</button>`)
+              const _btnCancelar = $(`
+                <button type="button" class="btn btn-secondary bg-secondary modal-fechar"
+                data-dismiss="modal">Fechar</button>
+              `)
+              _btnAlugar.on('click', () => {
+                if (!__logado) return Swal.fire({ icon: 'error', title: 'Entre para alugar.' })
+                if ($('.pagamentoselect').find('option').toArray().length === 0) return Swal.fire({ icon: 'error', title: 'Não há métodos de pagamento disponíveis' })
+                const data = $('#data').val()
+                if (data.length === 0) return Swal.fire({ icon: 'error', title: 'Data não permitida' })
+                const __data = new Date(data)
+                if (__data < hoje()) return Swal.fire({ icon: 'error', title: 'Data não permitida' })
+                const dias = Math.ceil((__data - hoje()) / (1000 * 60 * 60 * 24))
+                __data.setHours(__data.getHours() + 1)
+                const [match, a, b] = __data.toISOString().match(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})/)
+                $.post('/api/aluguel/create', {
+                  movelId: _data.id,
+                  usuarioId: _data.usuarioId,
+                  valorFrete: 0,
+                  dataFim: `${a} ${b}`,
+                  pagamentoId: $('.pagamentoselect').val(),
+                })
+                  .then(d => log(d) || d)
+                  .then(d => Swal.fire({ icon: 'success', title: d.msg }).then(() => location = '/'))
+                  .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg }))
+              }
+              )
+              _btnCancelar.on('click', () => $('.modal').hide())
+              $('.modal-footer').html('')
+              $('.modal-footer').append(_btnAlugar)
+              $('.modal-footer').append(_btnCancelar)
+            })
+            $('#pagination').html('')
+            $('#pagination').append(`<li class="page-item" data-role="previous"><a class="page-link">Anterior</a></li>`)
+            for (let i = 1; i <= d.data.paginas; i++) $('#pagination').append(`<li class="page-item ${pagina == i ? 'active' : ''}" data-role="page" data-page="${i}"><a class="page-link">${i}</a></li>`)
+            $('#pagination').append(`<li class="page-item" data-role="next"><a class="page-link">Próximo</a></li>`)
+            $('#pagination > li[data-role="previous"]').on('click', function () {
+              pagina--
+              update()
+            })
+            $('#pagination > li[data-role="page"]').on('click', function () {
+              pagina = parseInt($(this).attr('data-page'))
+              update()
+            })
+            $('#pagination > li[data-role="next"]').on('click', function () {
+              pagina += pagina + 1 > d.data.paginas ? 0 : 1
+              update()
+            })
+          })
+          .catch(log)
+
+        $.get('/api/categorias')
+          .then(d => log('categorias', d) || d)
+          .then(d => {
+            $('#v-pills-tab').html('')
+            $('#v-pills-tab').append(`
+              <a class="nav-link categoria ${'Tudo' == categoria ? 'active' : ''}" id="v-pills-0-tab"
+                data-toggle="pill" href="#v-pills-0" role="tab" aria-controls="v-pills-0"
+                aria-selected="${'Tudo' == categoria ? 'true' : 'false'}">
+                  Tudo
+              </a>
+            `)
+            d.data = d.data.sort((a, b) => a.nome === 'Outros' ? 1 : -1)
+            d.data.forEach((v, k) =>
+              $('#v-pills-tab').append(`
+              <a class="nav-link categoria ${v.nome == categoria ? 'active' : ''}" id="v-pills-${k + 1}-tab"
+                data-toggle="pill" href="#v-pills-${k + 1}" role="tab" aria-controls="v-pills-${k + 1}"
+                aria-selected="${v.nome == categoria ? 'true' : 'false'}">
+                  ${v.nome}
+              </a>
+              `))
+            $('#v-pills-tab > a').on('click', function () {
+              pagina = 1
+              update(this)
+            })
+          })
+          .catch(log)
+      }
+
+      function rate(rating, send, id) { // ☆ ★
+        $('.star').css({ color: 'black' })
+        $('.star').html('☆')
+        for (let i = 1; i <= rating; i++) {
+          $(`#s_${i}`).css({ color: '#ebb00e' })
+          $(`#s_${i}`).html('★')
+        }
+        send && $.get(`/api/avaliar/${id}/${rating}`)
+          .then(d => Swal.fire({ icon: 'success', title: 'Avaliado!' }))
+          .catch(log)
+      }
+
+      update()
+
+      $('.modal-fechar, .modal-fechar').on('click', () => $('.modal').hide())
+
+      $('#filtro').on('keyup', update)
+
+      $('#disponiveis').on('change', update)
+
+      $('#quantidade').on('change', () => {
+        pagina = 1
+        update()
+      })
+
+      $('[name=ordenar]').on('change', function () {
+        ordenar = $(this).val()
+        update()
+      })
+
+    })
+  </script>
+
+  <%- include('footer.ejs') %>
+
+</body>
+
+</html>

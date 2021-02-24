@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <%- include('head.ejs') %>
+  <link rel="stylesheet" type="text/css" href="./css/datatables.min.css" />
+  <link href="./css/chart.min.css" rel="stylesheet">
+  <script type="text/javascript" src="./js/jquery.mask.min.js"></script>
+  <script type="text/javascript" src="./js/chart.min.js"></script>
+  <script type="text/javascript" src="./js/datatables.min.js"></script>
+</head>
+
+<body>
+
+  <%- include('header.ejs', { page }) %>
+
+  <main class="mb-4" style="min-height: 100vh;">
+    <div
+      style="height: 300px; backdrop-filter: brightness(50%); background-image: url(../img/<%= include('cover.ejs') %>); background-size: cover">
+      <div class="w-100 h-100 d-flex justify-content-center align-items-center text-center"
+        style="backdrop-filter: brightness(50%)">
+        <h1 class="text-white">Admin</h1>
+      </div>
+    </div>
+    <div class="container mt-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-md-3 border-right">
+              <h2>Sistema</h2>
+              <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <a class="nav-link active" id="v-pills-stats-tab" data-toggle="pill" href="#v-pills-stats" role="tab"
+                  aria-controls="v-pills-stats" aria-selected="true">
+                  Visão Geral
+                </a>
+                <a class="nav-link" id="v-pills-alugueis-tab" data-toggle="pill" href="#v-pills-alugueis" role="tab"
+                  aria-controls="v-pills-alugueis" aria-selected="false">
+                  Aluguéis
+                </a>
+                <a class="nav-link" id="v-pills-avaliacoes-tab" data-toggle="pill" href="#v-pills-avaliacoes" role="tab"
+                  aria-controls="v-pills-avaliacoes" aria-selected="false">
+                  Avaliações
+                </a>
+                <a class="nav-link" id="v-pills-categorias-tab" data-toggle="pill" href="#v-pills-categorias" role="tab"
+                  aria-controls="v-pills-categorias" aria-selected="false">
+                  Categorias
+                </a>
+                <a class="nav-link" id="v-pills-contato-tab" data-toggle="pill" href="#v-pills-contato" role="tab"
+                  aria-controls="v-pills-contato" aria-selected="false">
+                  Contato
+                </a>
+                <!-- <a class="nav-link" id="v-pills-denuncias-tab" data-toggle="pill" href="#v-pills-denuncias" role="tab"
+                  aria-controls="v-pills-denuncias" aria-selected="false">
+                  Denúncias
+                </a> -->
+                <a class="nav-link" id="v-pills-moveis-tab" data-toggle="pill" href="#v-pills-moveis" role="tab"
+                  aria-controls="v-pills-moveis" aria-selected="false">
+                  Móveis
+                </a>
+                <a class="nav-link" id="v-pills-pagamentos-tab" data-toggle="pill" href="#v-pills-pagamentos" role="tab"
+                  aria-controls="v-pills-pagamentos" aria-selected="false">
+                  Pagamentos
+                </a>
+                <a class="nav-link" id="v-pills-usuarios-tab" data-toggle="pill" href="#v-pills-usuarios" role="tab"
+                  aria-controls="v-pills-usuarios" aria-selected="false">
+                  Usuários
+                </a>
+              </div>
+            </div>
+            <div class="col-12 col-md-9">
+              <div class="tab-content" id="v-pills-tabContent">
+                <div class="tab-pane fade show p-2 active" id="v-pills-stats" role="tabpanel"
+                  aria-labelledby="v-pills-stats-tab">
+                  <h4 class="mb-3">Visão Geral</h4>
+                  <div id="estatisticas" class="row"></div>
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="card my-2">
+                        <div class="card-header">
+                          <h4 class="card-title pt-2">Aluguéis do sistema</h4>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="graficoMoveis"
+                            style="min-height: 250px; height: 300px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="card my-2">
+                        <div class="card-header">
+                          <h4 class="card-title pt-2">Móveis no sistema</h4>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="graficoMoveis2"
+                            style="min-height: 250px; height: 300px; max-height: 350px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="card my-2">
+                        <div class="card-header">
+                          <h4 class="card-title pt-2">Usuários no sistema</h4>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="graficoMoveis3"
+                            style="min-height: 250px; height: 300px; max-height: 350px; max-width: 100%;"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-alugueis" role="tabpanel"
+                  aria-labelledby="v-pills-alugueis-tab">
+                  <h4 class="mb-3">Aluguéis</h4>
+                  <table class="table table-bordered table-hover w-100" id="talugueis">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-avaliacoes" role="tabpanel"
+                  aria-labelledby="v-pills-avaliacoes-tab">
+                  <h4 class="mb-3">Avaliações</h4>
+                  <table class="table table-bordered table-hover w-100" id="tavaliacoes">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-categorias" role="tabpanel"
+                  aria-labelledby="v-pills-categorias-tab">
+                  <div class="d-flex flex-row justify-content-between align-items-center">
+                    <h4 class="my-2 h-100">Categorias</h4>
+                    <button id='addCategoria' class="btn btn-primary bg-primary my-2"><i
+                        class="fa fa-plus"></i></button>
+                  </div>
+                  <table class="table table-bordered table-hover w-100" id="tcategorias">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-contato" role="tabpanel"
+                  aria-labelledby="v-pills-contato-tab">
+                  <h4 class="mb-3">Contato</h4>
+                  <table class="table table-bordered table-hover w-100" id="tcontato">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <!-- <div class="tab-pane fade p-2" id="v-pills-denuncias" role="tabpanel"
+                  aria-labelledby="v-pills-denuncias-tab">
+                  <h4 class="mb-3">Denúncias</h4>
+                  <table class="table table-bordered table-hover w-100" id="tdenuncias">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div> -->
+                <div class="tab-pane fade p-2" id="v-pills-moveis" role="tabpanel" aria-labelledby="v-pills-moveis-tab">
+                  <h4 class="mb-3">Móveis</h4>
+                  <table class="table table-bordered table-hover w-100" id="tmoveis">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-pagamentos" role="tabpanel"
+                  aria-labelledby="v-pills-pagamentos-tab">
+                  <h4 class="mb-3">Pagamentos</h4>
+                  <table class="table table-bordered table-hover w-100" id="tpagamentos">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+                <div class="tab-pane fade p-2" id="v-pills-usuarios" role="tabpanel"
+                  aria-labelledby="v-pills-usuarios-tab">
+                  <h4 class="mb-3">Usuários</h4>
+                  <table class="table table-bordered table-hover w-100" id="tusuarios">
+                    <thead></thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const { log } = console
+
+    const language = {
+      "decimal": "",
+      "emptyTable": "Não foi encontrado nenhum registro",
+      "info": "Mostrando _START_ até _END_ de _TOTAL_ registros",
+      "infoEmpty": "Mostrando 0 até 0 de 0 registros",
+      "infoFiltered": "(filtrado de _MAX_ registros totais)",
+      "infoPostFix": "",
+      "thousands": ",",
+      "lengthMenu": "Mostrar _MENU_ registros",
+      "loadingRecords": "Carregando...",
+      "processing": "Processando...",
+      "search": "Buscar:",
+      "zeroRecords": "Nenhum registro foi encontrado",
+      "paginate": {
+        "first": "Primeiro",
+        "last": "Último",
+        "next": "Próximo",
+        "previous": "Anterior",
+      },
+      "aria": {
+        "sortAscending": ": ative para ordenar a coluna crescente",
+        "sortDescending": ": ative para ordenar a coluna decrescente",
+      },
+    }
+
+    const deletePrompt = (tabela, id, that) => {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Deseja excluír este registro?',
+        showDenyButton: true,
+        confirmButtonText: `Sim`,
+        denyButtonText: `Não`,
+      }).then(result => result.isConfirmed && $.get(`/api/admin/${tabela}/delete/${id}`)
+        .then(d => log('delete', d) || Swal.fire({ icon: 'success', title: d.msg }).then(() => $(that).click()))
+        .catch(e => log(e) || Swal.fire({ icon: 'error', title: e.responseJSON.msg })))
+    }
+
+    numeral.locale('pt-br')
+    $(document).ready(() => {
+
+      // gets
+
+      const getCategorias = () => $.get('/api/admin/categorias')
+        .then(d => log('categorias', d) || d)
+        .then(({ data }) => {
+          tcategorias.clear()
+          tcategorias.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('categoria', '${v.id}', '#v-pills-categorias-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tcategorias.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+
+      // listeners
+
+      $('#addCategoria').on('click', function () {
+        Swal.fire({
+          confirmButtonText: 'Adicionar',
+          title: 'Adicionar categoria',
+          input: 'text',
+          preConfirm: result => {
+            try {
+              if (result.length === 0 || result.length > 20) throw 'Nome inválido'
+              return result
+            } catch (e) {
+              Swal.showValidationMessage(e)
+              return false
+            }
+          },
+        })
+          .then(({ isConfirmed, value: nome }) => {
+            if (isConfirmed) {
+              $.post('/api/admin/categoria/create', { nome })
+                .then(d => {
+                  log(d)
+                  getCategorias()
+                  Swal.fire({ icon: 'success', title: d.msg })
+                })
+                .catch(e => Swal.fire({ icon: 'error', title: 'Atenção', text: e.responseJSON.msg }))
+
+            }
+          })
+
+      })
+
+      $.get('/api/admin/info')
+        .then(d => log('info', d) || d)
+        .then(d => {
+          d.forEach(v => $('#estatisticas').append(`
+          <div class="col-md-6 d-flex">
+            <div class="card my-2 flex-fill">
+              <div class="card-body text-center">
+                <h5>${v.label}</h5>
+                <h1>${v.valor}</h1>
+              </div>
+            </div>
+          </div>
+          `))
+          if (d[0].valor === 0) {
+            $('#graficoMoveis').hide()
+            $('#graficoMoveis').before(`
+            <div class="w-100 text-center">
+              <p class="py-5">Não há aluguéis cadastrados</p>
+            <div>
+            `)
+          } else {
+            const _one = d.find(f => f.nome === 'alugueisativos').valor
+            const _two = d.find(f => f.nome === 'alugueiscancelados').valor
+            const _cadastradosAlugados = new Chart($('#graficoMoveis').get(0).getContext('2d'), {
+              type: 'doughnut', // #00a65a #f56954
+              data: {
+                labels: ['Ativos', 'Cancelados'],
+                datasets: [{
+                  data: [_one, _two],
+                  backgroundColor: ['#00a65a', '#f56954'],
+                },
+                ],
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+              },
+            })
+            const __one = d.find(f => f.nome === 'moveisdisponiveis').valor
+            const __two = d.find(f => f.nome === 'moveisindisponiveis').valor
+            const __cadastradosAlugados = new Chart($('#graficoMoveis2').get(0).getContext('2d'), {
+              type: 'doughnut', // #00a65a #f56954
+              data: {
+                labels: ['Disponíveis', 'Indisponíveis'],
+                datasets: [{
+                  data: [__one, __two],
+                  backgroundColor: ['#00a65a', '#f56954'],
+                },
+                ],
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+              },
+            })
+            const ___one = d.find(f => f.nome === 'usuarios1').valor
+            const ___two = d.find(f => f.nome === 'usuarios2').valor
+            const ___cadastradosAlugados = new Chart($('#graficoMoveis3').get(0).getContext('2d'), {
+              type: 'doughnut', // #00a65a #f56954
+              data: {
+                labels: ['Acesso 1 (Locatários)', 'Acesso 2 (Locadores)'],
+                datasets: [{
+                  data: [___one, ___two],
+                  backgroundColor: ['#00a65a', '#f56954'],
+                },
+                ],
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+              },
+            })
+          }
+
+          /* if (d.relatorio.ganhos.length === 0 && d.relatorio.gastos.length === 0) {
+            $('#graficoRelatorio').hide()
+            $('#graficoRelatorio').before(`
+            <div class="w-100 text-center">
+              <p class="py-5">Não há relatório para ser exibido</p>
+            <div>
+            `)
+          } else {
+            const _relatorio = new Chart($('#graficoRelatorio').get(0).getContext('2d'), {
+              type: 'bar', // #00a65a #f56954
+              data: {
+                labels: d.relatorio.ganhos.map(v => v.mes),
+                datasets: [{
+                  label: 'Gastos',
+                  backgroundColor: '#f56954',
+                  data: d.relatorio.gastos.map(v => v.total),
+                },
+                {
+                  label: 'Ganhos',
+                  backgroundColor: '#00a65a',
+                  data: d.relatorio.ganhos.map(v => v.total),
+                }],
+              },
+              options: {
+                scales: {
+                  xAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Mês',
+                    },
+                    gridLines: {
+                      offsetGridLines: true,
+                    },
+                  }],
+                  yAxes: [{
+                    scaleLabel: {
+                      display: true,
+                      labelString: 'Valor (R$)',
+                    },
+                    ticks: {
+                      beginAtZero: true,
+                    },
+                    gridLines: {
+                      offsetGridLines: true,
+                    },
+                  }],
+                },
+              },
+            })
+          } */
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+
+      let talugueis = $('#talugueis').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Nome', data: 'nome' },
+          { title: 'Status', data: 'status' },
+          { data: 'descricao', visible: false },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+      let tavaliacoes = $('#tavaliacoes').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Avaliação', data: 'avaliacao' },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+      let tcategorias = $('#tcategorias').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Nome', data: 'nome' },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+      let tcontato = $('#tcontato').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Nome', data: 'nome' },
+          { title: 'Email', data: 'email' },
+          { title: 'Assunto', data: 'assunto' },
+          { data: 'mensagem', visible: false },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+      /* let tdenuncias = $('#tdenuncias').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Tipo', data: 'tipo' },
+          { title: 'Descrição', data: 'descricao' },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      }) */
+      let tmoveis = $('#tmoveis').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Nome', data: 'nome' },
+          { title: 'Status', data: 'status' },
+          { title: 'Descrição', data: 'descricao' },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+      let tpagamentos = $('#tpagamentos').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Tipo', data: 'tipo' },
+          { title: 'Número', data: 'numero' },
+          { title: 'Validade', data: 'validade' },
+          { title: 'CVV', data: 'cvv' },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+      let tusuarios = $('#tusuarios').DataTable({
+        columnDefs: [
+          { "className": "align-middle", "targets": "_all" },
+        ],
+        columns: [
+          { title: '#', data: 'id' },
+          { title: 'Usuário', data: 'usuario' },
+          { title: 'CPF', data: 'cpf' },
+          { title: 'Email', data: 'email' },
+          { title: 'Celular', data: 'celular' },
+          { title: 'Acesso', data: 'acesso' },
+          { data: 'cep', visible: false },
+          { data: 'logradouro', visible: false },
+          { data: 'complemento', visible: false },
+          { data: 'bairro', visible: false },
+          { data: 'cidade', visible: false },
+          { data: 'uf', visible: false },
+          { title: 'Ações', data: 'acoes' },
+        ],
+        language,
+      })
+
+      $('#v-pills-alugueis-tab').on('click', () => $.get('/api/admin/alugueis')
+        .then(d => log('alugueis', d) || d)
+        .then(({ data }) => {
+          talugueis.clear()
+          talugueis.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('aluguel', '${v.id}', '#v-pills-alugueis-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          talugueis.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      )
+
+      $('#v-pills-avaliacoes-tab').on('click', () => $.get('/api/admin/avaliacoes')
+        .then(d => log('avaliacoes', d) || d)
+        .then(({ data }) => {
+          tavaliacoes.clear()
+          tavaliacoes.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('avaliacao', '${v.id}', '#v-pills-avaliacoes-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tavaliacoes.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      )
+
+      $('#v-pills-categorias-tab').on('click', () => getCategorias())
+
+      $('#v-pills-contato-tab').on('click', () => $.get('/api/admin/contato')
+        .then(d => log('contato', d) || d)
+        .then(({ data }) => {
+          tcontato.clear()
+          tcontato.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('contato', '${v.id}', '#v-pills-contato-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tcontato.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      )
+
+      /* $('#v-pills-denuncias-tab').on('click', () => $.get('/api/admin/denuncias')
+        .then(d => log('denuncias', d) || d)
+        .then(({ data }) => {
+          tdenuncias.clear()
+          tdenuncias.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('denuncia', '${v.id}', '#v-pills-denuncias-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tdenuncias.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      ) */
+
+      $('#v-pills-moveis-tab').on('click', () => $.get('/api/admin/moveis')
+        .then(d => log('moveis', d) || d)
+        .then(({ data }) => {
+          tmoveis.clear()
+          tmoveis.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('movel', '${v.id}', '#v-pills-moveis-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tmoveis.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      )
+
+      $('#v-pills-pagamentos-tab').on('click', () => $.get('/api/admin/pagamentos')
+        .then(d => log('pagamentos', d) || d)
+        .then(({ data }) => {
+          tpagamentos.clear()
+          tpagamentos.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('pagamento', '${v.id}', '#v-pills-pagamentos-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tpagamentos.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      )
+
+      $('#v-pills-usuarios-tab').on('click', () => $.get('/api/admin/usuarios')
+        .then(d => log('usuarios', d) || d)
+        .then(({ data }) => {
+          tusuarios.clear()
+          tusuarios.rows.add(data.map(v => ({
+            ...v, acoes: `
+            <button class="btn btn-danger" onClick="deletePrompt('usuario', '${v.id}', '#v-pills-usuarios-tab')"><i class="fa fa-trash"></i></button>
+            `})))
+          tusuarios.draw(false)
+        })
+        .catch(e => e.status === 403 && Swal.fire({ icon: 'error', title: 'Acesso negado' }).then(() => location = '/entrar'))
+      )
+
+    })
+  </script>
+
+  <%- include('footer.ejs') %>
+
+</body>
+
+</html>
